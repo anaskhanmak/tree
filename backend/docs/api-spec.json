@@ -1,0 +1,90 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "TreeMint REST API",
+    "version": "1.0.0",
+    "description": "Enterprise-grade REST API for TreeMint - Digital Tree Sponsorship, Verification & Growth Tracking Platform."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5000/api/v1",
+      "description": "Local Development Server"
+    }
+  ],
+  "paths": {
+    "/auth/register": {
+      "post": {
+        "summary": "Register a new donor account",
+        "tags": ["Auth"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["fullName", "email", "password", "city"],
+                "properties": {
+                  "fullName": { "type": "string" },
+                  "email": { "type": "string" },
+                  "password": { "type": "string" },
+                  "city": { "type": "string" },
+                  "phone": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Account created successfully" }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "summary": "Sign in with email and password",
+        "tags": ["Auth"],
+        "responses": {
+          "200": { "description": "Authentication tokens returned" }
+        }
+      }
+    },
+    "/campaigns": {
+      "get": {
+        "summary": "List active campaigns with filtering and pagination",
+        "tags": ["Campaigns"],
+        "responses": {
+          "200": { "description": "List of campaigns" }
+        }
+      }
+    },
+    "/trees/{treeCode}": {
+      "get": {
+        "summary": "Retrieve public tree passport and verification records",
+        "tags": ["Trees"],
+        "responses": {
+          "200": { "description": "Tree details, timeline, proof photo, and certificate" }
+        }
+      }
+    },
+    "/dashboard/sponsor": {
+      "post": {
+        "summary": "Sponsor a tree, generate Tree ID, award points and update campaign",
+        "tags": ["Donor"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "201": { "description": "Sponsorship created" }
+        }
+      }
+    },
+    "/admin/verification": {
+      "get": {
+        "summary": "Retrieve queue of pending field plantation proofs",
+        "tags": ["Admin"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "List of pending proofs" }
+        }
+      }
+    }
+  }
+}

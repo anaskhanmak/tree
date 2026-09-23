@@ -1,0 +1,57 @@
+{
+  "name": "treemint-backend",
+  "version": "1.0.0",
+  "description": "TreeMint - Digital Tree Sponsorship, Plantation Verification & Growth Tracking Platform Backend REST API",
+  "main": "dist/server.js",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "db:setup": "tsx database/setup.ts",
+    "db:seed": "tsx database/seed.ts",
+    "test": "tsx tests/api.test.ts"
+  },
+  "keywords": [
+    "treemint",
+    "reforestation",
+    "esg",
+    "afforestation",
+    "verification",
+    "express",
+    "mysql",
+    "typescript"
+  ],
+  "author": "Muhammad Anas",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@types/uuid": "^10.0.0",
+    "bcryptjs": "^3.0.3",
+    "compression": "^1.8.2",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "dotenv": "^17.2.3",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.1",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.3",
+    "morgan": "^1.10.1",
+    "multer": "^2.0.2",
+    "mysql2": "^3.19.1",
+    "uuid": "^11.1.1",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^3.0.0",
+    "@types/compression": "^1.8.1",
+    "@types/cookie-parser": "^1.4.10",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/morgan": "^1.9.10",
+    "@types/multer": "^1.4.13",
+    "@types/node": "^22.14.0",
+    "tsx": "^4.21.0",
+    "typescript": "^7.0.2"
+  }
+}

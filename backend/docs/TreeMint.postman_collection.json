@@ -1,0 +1,177 @@
+{
+  "info": {
+    "name": "TreeMint REST API",
+    "_postman_id": "treemint-postman-collection-2026",
+    "description": "Comprehensive Postman collection for TreeMint - Digital Tree Sponsorship, Verification & Growth Tracking Platform.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Authentication",
+      "item": [
+        {
+          "name": "Register Donor",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Muhammad Anas\",\n  \"email\": \"donor.test@treemint.org\",\n  \"password\": \"Password123!\",\n  \"city\": \"Karachi\",\n  \"phone\": \"+92 300 1234567\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] }
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"muhammadanaskhaann@gmail.com\",\n  \"password\": \"Password123!\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Get Current User (Me)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/auth/me", "host": ["{{baseUrl}}"], "path": ["auth", "me"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Public Campaigns & Trees",
+      "item": [
+        {
+          "name": "List Campaigns",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/campaigns", "host": ["{{baseUrl}}"], "path": ["campaigns"] }
+          }
+        },
+        {
+          "name": "Get Campaign by Slug",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/campaigns/karachi-green-canopy", "host": ["{{baseUrl}}"], "path": ["campaigns", "karachi-green-canopy"] }
+          }
+        },
+        {
+          "name": "Get Tree Passport (Ledger)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/trees/TREE-KHI-2026-00125", "host": ["{{baseUrl}}"], "path": ["trees", "TREE-KHI-2026-00125"] }
+          }
+        },
+        {
+          "name": "Verify Certificate Public",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/certificates/CERT-2026-000125", "host": ["{{baseUrl}}"], "path": ["certificates", "CERT-2026-000125"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Donor Operations",
+      "item": [
+        {
+          "name": "Sponsor a Tree",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"campaignId\": 1,\n  \"speciesId\": 1,\n  \"quantity\": 1,\n  \"dedicationMessage\": \"In dedication to green Karachi.\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/dashboard/sponsor", "host": ["{{baseUrl}}"], "path": ["dashboard", "sponsor"] }
+          }
+        },
+        {
+          "name": "Get My Trees",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/dashboard/trees", "host": ["{{baseUrl}}"], "path": ["dashboard", "trees"] }
+          }
+        },
+        {
+          "name": "Get Donor Overview Analytics",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/dashboard/overview", "host": ["{{baseUrl}}"], "path": ["dashboard", "overview"] }
+          }
+        },
+        {
+          "name": "Get My Certificates",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/dashboard/certificates", "host": ["{{baseUrl}}"], "path": ["dashboard", "certificates"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Field Squad & Plantation Proof",
+      "item": [
+        {
+          "name": "Submit Plantation Proof",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"treeId\": 2,\n  \"imageUrl\": \"/assets/images/tree_sapling.png\",\n  \"plantationDate\": \"2026-02-15\",\n  \"latitude\": 24.8612,\n  \"longitude\": 67.0025,\n  \"notes\": \"Root ball planted in sandy loam with 5kg organic mulch.\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/team/plantation-proof", "host": ["{{baseUrl}}"], "path": ["team", "plantation-proof"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Admin Auditing & Verification",
+      "item": [
+        {
+          "name": "Get Verification Queue",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/admin/verification", "host": ["{{baseUrl}}"], "path": ["admin", "verification"] }
+          }
+        },
+        {
+          "name": "Approve Plantation Proof",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/admin/verification/1/approve", "host": ["{{baseUrl}}"], "path": ["admin", "verification", "1", "approve"] }
+          }
+        }
+      ]
+    }
+  ]
+}
