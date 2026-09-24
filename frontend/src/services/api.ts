@@ -1,6 +1,6 @@
 /**
  * TreeMint Frontend API Client
- * Connects the React UI to the Express + MySQL REST API (port 5000)
+ * Connects the React UI to the Express + MySQL REST API (port 5001)
  */
 
 export interface ApiResponseEnvelope<T = any> {
@@ -12,7 +12,7 @@ export interface ApiResponseEnvelope<T = any> {
 }
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1";
+  import.meta.env.VITE_API_URL || "http://localhost:5001/api/v1";
 
 class ApiClient {
   private token: string | null = null;
@@ -44,7 +44,7 @@ class ApiClient {
 
   private async request<T = any>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
   ): Promise<ApiResponseEnvelope<T>> {
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
@@ -68,13 +68,19 @@ class ApiClient {
 
       const json = await res.json();
       if (!res.ok) {
-        throw new Error(json.message || `Request failed with status ${res.status}`);
+        throw new Error(
+          json.message || `Request failed with status ${res.status}`,
+        );
       }
       this.isConnected = true;
       return json;
     } catch (err: any) {
       clearTimeout(timeoutId);
-      if (err.name === "AbortError" || err.message?.includes("Failed to fetch") || err.message?.includes("NetworkError")) {
+      if (
+        err.name === "AbortError" ||
+        err.message?.includes("Failed to fetch") ||
+        err.message?.includes("NetworkError")
+      ) {
         this.isConnected = false;
       }
       throw err;
@@ -82,11 +88,25 @@ class ApiClient {
   }
 
   // Health check
-  async checkHealth(): Promise<{ status: string; database?: any; engine?: string } | null> {
+  async checkHealth(): Promise<{
+    status: string;
+    message?: string;
+    database?: any;
+    engine?: string;
+  } | null> {
     try {
-      const res = await this.request<{ status: string; database?: any }>("/health");
-      this.isConnected = true;
-      return res.data || null;
+      const res = await this.request<any>("/health");
+      this.isConnected = Boolean(res?.success);
+      if (!res?.success) return null;
+
+      return {
+        status: "healthy",
+        message: res.message || "TreeMint API is running healthy.",
+        database: res.database || {
+          engine: res.service || "MySQL / Simulation",
+        },
+        engine: res.service || "MySQL / Simulation",
+      };
     } catch (err) {
       this.isConnected = false;
       return null;
@@ -95,10 +115,13 @@ class ApiClient {
 
   // Authentication
   async login(credentials: { email: string; password: string }) {
-    const res = await this.request<{ user: any; accessToken: string }>("/auth/login", {
-      method: "POST",
-      body: JSON.stringify(credentials),
-    });
+    const res = await this.request<{ user: any; accessToken: string }>(
+      "/auth/login",
+      {
+        method: "POST",
+        body: JSON.stringify(credentials),
+      },
+    );
     if (res.data?.accessToken) {
       this.setToken(res.data.accessToken);
     }
@@ -113,10 +136,13 @@ class ApiClient {
     phone?: string;
     role?: string;
   }) {
-    const res = await this.request<{ user: any; accessToken: string }>("/auth/register", {
-      method: "POST",
-      body: JSON.stringify(data),
-    });
+    const res = await this.request<{ user: any; accessToken: string }>(
+      "/auth/register",
+      {
+        method: "POST",
+        body: JSON.stringify(data),
+      },
+    );
     if (res.data?.accessToken) {
       this.setToken(res.data.accessToken);
     }

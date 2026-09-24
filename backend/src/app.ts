@@ -18,18 +18,34 @@ export function createApp(): Express {
   app.use(
     helmet({
       crossOriginResourcePolicy: { policy: "cross-origin" },
-    })
+    }),
   );
 
   // CORS Configuration
+  const allowedOrigins = new Set([
+    ENV.FRONTEND_URL,
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:3001",
+  ]);
+
   app.use(
     cors({
-      origin: [ENV.FRONTEND_URL, "http://localhost:3000", "http://127.0.0.1:3000"],
+      origin: (origin, callback) => {
+        if (!origin || allowedOrigins.has(origin)) {
+          callback(null, true);
+          return;
+        }
+
+        callback(new Error(`CORS blocked for origin: ${origin}`));
+      },
       credentials: true,
       methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
       allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
-    })
+    }),
   );
+  app.options("*", cors());
 
   // Performance & Body Parsing
   app.use(compression());
@@ -64,7 +80,10 @@ export function createApp(): Express {
 
   // 404 Route Handler
   app.use((req, res) => {
-    return ApiResponse.notFound(res, `Endpoint [${req.method} ${req.url}] not found on TreeMint API server.`);
+    return ApiResponse.notFound(
+      res,
+      `Endpoint [${req.method} ${req.url}] not found on TreeMint API server.`,
+    );
   });
 
   // Centralized Error Handler

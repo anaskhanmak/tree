@@ -55,10 +55,12 @@ class DatabaseConnection {
       conn.release();
       this.isConnected = true;
       this.useInMemoryFallback = false;
-      logger.info(`✅ Connected to MySQL Database [${ENV.DB.NAME}] at ${ENV.DB.HOST}:${ENV.DB.PORT}`);
+      logger.info(
+        `✅ Connected to MySQL Database [${ENV.DB.NAME}] at ${ENV.DB.HOST}:${ENV.DB.PORT}`,
+      );
     } catch (err: any) {
       logger.warn(
-        `⚠️ MySQL server not reachable at ${ENV.DB.HOST}:${ENV.DB.PORT} (${err.message}). Activating in-memory relational simulation engine with seed data.`
+        `⚠️ MySQL server not reachable at ${ENV.DB.HOST}:${ENV.DB.PORT} (${err.message}). Activating in-memory relational simulation engine with seed data.`,
       );
       this.useInMemoryFallback = true;
       this.seedInMemory();
@@ -89,8 +91,16 @@ class DatabaseConnection {
         const [rows] = await this.pool.query(sql, params);
         return rows as T[];
       } catch (err: any) {
-        if (err.code === "ECONNREFUSED" || err.code === "ENOTFOUND" || err.errno === -111) {
-          logger.warn(`MySQL connection unavailable (${err.code}). Switching to in-memory store.`);
+        if (
+          err.code === "ECONNREFUSED" ||
+          err.code === "ENOTFOUND" ||
+          err.errno === -111 ||
+          err.code === "ER_NO_SUCH_TABLE" ||
+          err.code === "ER_BAD_TABLE_ERROR"
+        ) {
+          logger.warn(
+            `MySQL schema/connection unavailable (${err.code || err.errno}). Switching to in-memory store.`,
+          );
           this.useInMemoryFallback = true;
           this.seedInMemory();
           return this.simulateQuery<T>(sql, params);
@@ -107,15 +117,26 @@ class DatabaseConnection {
   /**
    * Safe parameterized execute (insert/update/delete)
    */
-  public async execute(sql: string, params: any[] = []): Promise<{ insertId: number; affectedRows: number }> {
+  public async execute(
+    sql: string,
+    params: any[] = [],
+  ): Promise<{ insertId: number; affectedRows: number }> {
     if (!this.useInMemoryFallback && this.pool) {
       try {
         const [result] = await this.pool.execute(sql, params);
         const res = result as mysql.ResultSetHeader;
         return { insertId: res.insertId, affectedRows: res.affectedRows };
       } catch (err: any) {
-        if (err.code === "ECONNREFUSED" || err.code === "ENOTFOUND" || err.errno === -111) {
-          logger.warn(`MySQL connection unavailable (${err.code}). Switching to in-memory store.`);
+        if (
+          err.code === "ECONNREFUSED" ||
+          err.code === "ENOTFOUND" ||
+          err.errno === -111 ||
+          err.code === "ER_NO_SUCH_TABLE" ||
+          err.code === "ER_BAD_TABLE_ERROR"
+        ) {
+          logger.warn(
+            `MySQL schema/connection unavailable (${err.code || err.errno}). Switching to in-memory store.`,
+          );
           this.useInMemoryFallback = true;
           this.seedInMemory();
           return this.simulateExecute(sql, params);
@@ -131,7 +152,9 @@ class DatabaseConnection {
   /**
    * Transaction runner
    */
-  public async transaction<T>(callback: (conn: mysql.PoolConnection | any) => Promise<T>): Promise<T> {
+  public async transaction<T>(
+    callback: (conn: mysql.PoolConnection | any) => Promise<T>,
+  ): Promise<T> {
     if (!this.useInMemoryFallback && this.pool) {
       const conn = await this.pool.getConnection();
       try {
@@ -160,7 +183,8 @@ class DatabaseConnection {
         uuid: "usr-donor-001",
         full_name: "Muhammad Anas",
         email: "muhammadanaskhaann@gmail.com",
-        password_hash: "$2a$10$wT8mQ9vF7I4aE1rB2wZ6/e1s1u.j5t4k7l8m9n0p1q2r3s4t5u6v", // Password123!
+        password_hash:
+          "$2a$10$wT8mQ9vF7I4aE1rB2wZ6/e1s1u.j5t4k7l8m9n0p1q2r3s4t5u6v", // Password123!
         phone: "+92 300 1234567",
         city: "Karachi",
         role: "DONOR",
@@ -174,7 +198,8 @@ class DatabaseConnection {
         uuid: "usr-admin-001",
         full_name: "Dr. Tariq Mansoor",
         email: "admin@treemint.org",
-        password_hash: "$2a$10$wT8mQ9vF7I4aE1rB2wZ6/e1s1u.j5t4k7l8m9n0p1q2r3s4t5u6v",
+        password_hash:
+          "$2a$10$wT8mQ9vF7I4aE1rB2wZ6/e1s1u.j5t4k7l8m9n0p1q2r3s4t5u6v",
         phone: "+92 300 0000001",
         city: "Islamabad",
         role: "ADMIN",
@@ -188,7 +213,8 @@ class DatabaseConnection {
         uuid: "usr-org-001",
         full_name: "Director General Forestry",
         email: "forestry@sindh.gov.pk",
-        password_hash: "$2a$10$wT8mQ9vF7I4aE1rB2wZ6/e1s1u.j5t4k7l8m9n0p1q2r3s4t5u6v",
+        password_hash:
+          "$2a$10$wT8mQ9vF7I4aE1rB2wZ6/e1s1u.j5t4k7l8m9n0p1q2r3s4t5u6v",
         phone: "+92 21 99201234",
         city: "Karachi",
         role: "ORGANIZATION",
@@ -202,7 +228,8 @@ class DatabaseConnection {
         uuid: "usr-team-001",
         full_name: "Captain Aslam Raza",
         email: "team.alpha@treemint.org",
-        password_hash: "$2a$10$wT8mQ9vF7I4aE1rB2wZ6/e1s1u.j5t4k7l8m9n0p1q2r3s4t5u6v",
+        password_hash:
+          "$2a$10$wT8mQ9vF7I4aE1rB2wZ6/e1s1u.j5t4k7l8m9n0p1q2r3s4t5u6v",
         phone: "+92 300 5550001",
         city: "Karachi",
         role: "PLANTATION_TEAM",
@@ -220,7 +247,8 @@ class DatabaseConnection {
         name: "Sindh Forest & Wildlife Department",
         slug: "sindh-forest-dept",
         type: "GOVERNMENT",
-        description: "Provincial governmental forestry division managing mangroves and riverine reserves.",
+        description:
+          "Provincial governmental forestry division managing mangroves and riverine reserves.",
         email: "forestry@sindh.gov.pk",
         city: "Karachi",
         verification_status: "verified",
@@ -234,7 +262,8 @@ class DatabaseConnection {
         name: "WWF Pakistan",
         slug: "wwf-pakistan",
         type: "NGO",
-        description: "Leading biodiversity conservation and climate mitigation across Pakistan.",
+        description:
+          "Leading biodiversity conservation and climate mitigation across Pakistan.",
         email: "info@wwfpak.org",
         city: "Lahore",
         verification_status: "verified",
@@ -258,7 +287,8 @@ class DatabaseConnection {
         id: 2,
         name: "Peepal",
         scientific_name: "Ficus religiosa",
-        description: "Long-lived keystone species with day & night oxygen output.",
+        description:
+          "Long-lived keystone species with day & night oxygen output.",
         average_growth_rate: "Moderate (60cm/yr)",
         environmental_benefits: "Produces oxygen 24/7.",
         is_active: 1,
@@ -269,7 +299,8 @@ class DatabaseConnection {
         scientific_name: "Avicennia marina",
         description: "Salt-tolerant tidal species for coastal protection.",
         average_growth_rate: "Fast (70-90cm/yr)",
-        environmental_benefits: "Sequesters 4x more carbon than terrestrial trees.",
+        environmental_benefits:
+          "Sequesters 4x more carbon than terrestrial trees.",
         is_active: 1,
       },
     ];
@@ -339,7 +370,8 @@ class DatabaseConnection {
         verification_status: "verified",
         survival_status: "healthy",
         current_height_cm: 175,
-        dedication_message: "Dedicated to clean air and clean skies in Karachi.",
+        dedication_message:
+          "Dedicated to clean air and clean skies in Karachi.",
         sponsored_at: new Date("2025-01-10"),
         planted_at: new Date("2025-01-15"),
         verified_at: new Date("2025-01-16"),
@@ -381,7 +413,8 @@ class DatabaseConnection {
         donor_id: 1,
         campaign_id: 1,
         organization_id: 1,
-        verification_hash: "0x7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069",
+        verification_hash:
+          "0x7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069",
         issued_at: new Date("2025-01-16"),
         status: "active",
         created_at: new Date("2025-01-16"),
@@ -389,9 +422,36 @@ class DatabaseConnection {
     ];
 
     this.mockStore.badges = [
-      { id: 1, name: "First Seed", slug: "first-seed", description: "Sponsor your first tree", icon: "🌱", requirement_type: "SPONSORED_COUNT", requirement_value: 1, points: 100 },
-      { id: 2, name: "Green Supporter", slug: "green-supporter", description: "Sponsor 5 trees", icon: "🌿", requirement_type: "SPONSORED_COUNT", requirement_value: 5, points: 250 },
-      { id: 3, name: "Tree Champion", slug: "tree-champion", description: "Sponsor 10 trees", icon: "🌳", requirement_type: "SPONSORED_COUNT", requirement_value: 10, points: 500 },
+      {
+        id: 1,
+        name: "First Seed",
+        slug: "first-seed",
+        description: "Sponsor your first tree",
+        icon: "🌱",
+        requirement_type: "SPONSORED_COUNT",
+        requirement_value: 1,
+        points: 100,
+      },
+      {
+        id: 2,
+        name: "Green Supporter",
+        slug: "green-supporter",
+        description: "Sponsor 5 trees",
+        icon: "🌿",
+        requirement_type: "SPONSORED_COUNT",
+        requirement_value: 5,
+        points: 250,
+      },
+      {
+        id: 3,
+        name: "Tree Champion",
+        slug: "tree-champion",
+        description: "Sponsor 10 trees",
+        icon: "🌳",
+        requirement_type: "SPONSORED_COUNT",
+        requirement_value: 10,
+        points: 500,
+      },
     ];
 
     this.mockStore.user_badges = [
@@ -405,7 +465,8 @@ class DatabaseConnection {
         user_id: 1,
         type: "TREE_VERIFIED",
         title: "🌱 Plantation Proof Verified!",
-        message: "Your sponsored tree TREE-KHI-2026-00125 was inspected and verified.",
+        message:
+          "Your sponsored tree TREE-KHI-2026-00125 was inspected and verified.",
         data: { treeCode: "TREE-KHI-2026-00125" },
         read_at: new Date(),
         created_at: new Date(),
@@ -420,7 +481,9 @@ class DatabaseConnection {
     if (lower.includes("from users")) {
       if (lower.includes("where email = ?")) {
         const email = String(params[0]).toLowerCase();
-        return this.mockStore.users.filter((u) => u.email.toLowerCase() === email) as any;
+        return this.mockStore.users.filter(
+          (u) => u.email.toLowerCase() === email,
+        ) as any;
       }
       if (lower.includes("where id = ?")) {
         const id = Number(params[0]);
@@ -431,43 +494,61 @@ class DatabaseConnection {
 
     if (lower.includes("from campaigns")) {
       if (lower.includes("where slug = ?")) {
-        return this.mockStore.campaigns.filter((c) => c.slug === params[0]) as any;
+        return this.mockStore.campaigns.filter(
+          (c) => c.slug === params[0],
+        ) as any;
       }
       if (lower.includes("where id = ?")) {
-        return this.mockStore.campaigns.filter((c) => c.id === Number(params[0])) as any;
+        return this.mockStore.campaigns.filter(
+          (c) => c.id === Number(params[0]),
+        ) as any;
       }
       return this.mockStore.campaigns as any;
     }
 
     if (lower.includes("from organizations")) {
       if (lower.includes("where slug = ?")) {
-        return this.mockStore.organizations.filter((o) => o.slug === params[0]) as any;
+        return this.mockStore.organizations.filter(
+          (o) => o.slug === params[0],
+        ) as any;
       }
       if (lower.includes("where id = ?")) {
-        return this.mockStore.organizations.filter((o) => o.id === Number(params[0])) as any;
+        return this.mockStore.organizations.filter(
+          (o) => o.id === Number(params[0]),
+        ) as any;
       }
       return this.mockStore.organizations as any;
     }
 
     if (lower.includes("from trees")) {
       if (lower.includes("where tree_code = ?")) {
-        return this.mockStore.trees.filter((t) => t.tree_code === params[0]) as any;
+        return this.mockStore.trees.filter(
+          (t) => t.tree_code === params[0],
+        ) as any;
       }
       if (lower.includes("where id = ?")) {
-        return this.mockStore.trees.filter((t) => t.id === Number(params[0])) as any;
+        return this.mockStore.trees.filter(
+          (t) => t.id === Number(params[0]),
+        ) as any;
       }
       if (lower.includes("where donor_id = ?")) {
-        return this.mockStore.trees.filter((t) => t.donor_id === Number(params[0])) as any;
+        return this.mockStore.trees.filter(
+          (t) => t.donor_id === Number(params[0]),
+        ) as any;
       }
       return this.mockStore.trees as any;
     }
 
     if (lower.includes("from certificates")) {
       if (lower.includes("where certificate_number = ?")) {
-        return this.mockStore.certificates.filter((c) => c.certificate_number === params[0]) as any;
+        return this.mockStore.certificates.filter(
+          (c) => c.certificate_number === params[0],
+        ) as any;
       }
       if (lower.includes("where tree_id = ?")) {
-        return this.mockStore.certificates.filter((c) => c.tree_id === Number(params[0])) as any;
+        return this.mockStore.certificates.filter(
+          (c) => c.tree_id === Number(params[0]),
+        ) as any;
       }
       return this.mockStore.certificates as any;
     }
@@ -478,7 +559,9 @@ class DatabaseConnection {
 
     if (lower.includes("from notifications")) {
       if (lower.includes("where user_id = ?")) {
-        return this.mockStore.notifications.filter((n) => n.user_id === Number(params[0])) as any;
+        return this.mockStore.notifications.filter(
+          (n) => n.user_id === Number(params[0]),
+        ) as any;
       }
       return this.mockStore.notifications as any;
     }
@@ -486,7 +569,10 @@ class DatabaseConnection {
     return [] as T[];
   }
 
-  private simulateExecute(sql: string, params: any[]): { insertId: number; affectedRows: number } {
+  private simulateExecute(
+    sql: string,
+    params: any[],
+  ): { insertId: number; affectedRows: number } {
     const lower = sql.toLowerCase().trim();
 
     if (lower.startsWith("insert into users")) {
